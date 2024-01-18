@@ -1,37 +1,32 @@
 <div class="modal_head">
     <i class="icon_close" onclick="common.modal_hide()"></i>
 </div>
+
 <div class="modal_body">
     <div class="input_group_modal">
-        <div>Status</div>
-        <select id="status">
-            <option value="0"{if $plot.status_id == 0} selected{/if}>Free</option>
-            <option value="1"{if $plot.status_id == 1} selected{/if}>Reserved</option>
-            <option value="2"{if $plot.status_id == 2} selected{/if}>Sold</option>
-        </select>
+        <div>First name</div>
+        <input type="text" id="first_name" value="{$user.first_name}">
     </div>
     <div class="input_group_modal">
-        <div>Billing</div>
-        <select id="billing">
-            <option value="0"{if $plot.billing == 0} selected{/if}>No</option>
-            <option value="1"{if $plot.billing == 1} selected{/if}>Yes</option>
-        </select>
+        <div>Last name</div>
+        <input type="text" id="last_name" value="{$user.last_name}">
     </div>
     <div class="input_group_modal">
-        <div>Lot number</div>
-        <input type="text" id="number" value="{$plot.number}">
+        <div>Email</div>
+        <input type="text" id="email" value="{$user.email}">
     </div>
     <div class="input_group_modal">
-        <div>Size, acres</div>
-        <input type="text" id="size" value="{$plot.size}">
+        <div>Phone</div>
+        <input type="text" id="phone" value="{$user.phone}">
     </div>
     <div class="input_group_modal">
-        <div>Price, AED</div>
-        <input type="text" id="price" value="{$plot.price}">
+        <div>Plots</div>
+        <input type="text" id="plot_id" value="{$user.plot_id}">
     </div>
+
     <div class="modal_controls">
         <div>
-            <div class="btn_modal" onclick="common.user_edit_update({$plot.id});">Save</div>
+            <div class="btn_modal" onclick="common.user_edit_update({$user.user_id});">Save</div>
         </div>
         <div>
             <div class="btn_modal light" onclick="common.modal_hide();">Cancel</div>

@@ -6,27 +6,38 @@ class User {
 
     public static function user_info($d) {
         // vars
-        $user_id = isset($d['user_id']) && is_numeric($d['user_id']) ? $d['user_id'] : 0;
+        $user_id = is_array($d) ? ( isset($d['user_id']) && is_numeric($d['user_id']) ? $d['user_id'] : 0 ) : $d;
         $phone = isset($d['phone']) ? preg_replace('~\D+~', '', $d['phone']) : 0;
         // where
         if ($user_id) $where = "user_id='".$user_id."'";
         else if ($phone) $where = "phone='".$phone."'";
         else return [];
         // info
-        $q = DB::query("SELECT user_id, phone, access FROM users WHERE ".$where." LIMIT 1;") or die (DB::error());
+        $q = DB::query("SELECT user_id, phone, access, first_name, last_name, email, phone, plot_id FROM users WHERE ".$where." LIMIT 1;") or die (DB::error());
         if ($row = DB::fetch_row($q)) {
             return [
-                'id' => (int) $row['user_id'],
-                'access' => (int) $row['access']
+                'user_id' => (int) $row['user_id'],
+                'access' => (int) $row['access'],
+                'first_name' => $row['first_name'],
+                'last_name' => $row['last_name'],
+                'email' => $row['email'],
+                'phone' => $row['phone'],
+                'plot_id' => $row['plot_id'],
             ];
         } else {
             return [
-                'id' => 0,
-                'access' => 0
+                'user_id' => 0,
+                'access' => 0,
+                'first_name' => '',
+                'last_name' => '',
+                'email' => '',
+                'phone' => '',
+                'plot_id' => ''
             ];
         }
     }
 
+                
     public static function users_list($d = []) {
         // vars
         $search = isset($d['search']) && trim($d['search']) ? $d['search'] : '';
@@ -42,8 +53,8 @@ class User {
             FROM users ".$where." ORDER BY user_id LIMIT ".$offset.", ".$limit.";") or die (DB::error());
         while ($row = DB::fetch_row($q)) {
             $items[] = [
-                'id' => (int) $row['user_id'],
-                'plot_id' => (int) $row['plot_id'],
+                'user_id' => (int) $row['user_id'],
+                'plot_id' => $row['plot_id'],
                 'first_name' => $row['first_name'],
                 'last_name' => $row['last_name'],
                 'email' => $row['email'],
@@ -78,7 +89,7 @@ class User {
             $val = false;
             foreach($plot_ids as $plot_id) if ($plot_id == $number) $val = true;
             if ($val) $items[] = [
-                'id' => (int) $row['user_id'],
+                'user_id' => (int) $row['user_id'],
                 'first_name' => $row['first_name'],
                 'email' => $row['email'],
                 'phone_str' => phone_formatting($row['phone'])
@@ -99,43 +110,57 @@ class User {
 
     public static function user_edit_update($d = []) {
         // vars
-        $plot_id = isset($d['plot_id']) && is_numeric($d['plot_id']) ? $d['plot_id'] : 0;
-        $status = isset($d['status']) && is_numeric($d['status']) ? $d['status'] : 0;
-        $billing = isset($d['billing']) && in_array($d['billing'], [0,1]) ? $d['billing'] : 0;
-        $number = isset($d['number']) && trim($d['number']) ? trim($d['number']) : '';
-        $size = isset($d['size']) ? preg_replace('~\D+~', '', $d['size']) : 0;
-        $price = isset($d['price']) ? preg_replace('~\D+~', '', $d['price']) : 0;
+        $user_id = isset($d['user_id']) && is_numeric($d['user_id']) ? $d['user_id'] : 0;
+        $first_name = isset($d['first_name']) ? $d['first_name'] : '';
+        $last_name = isset($d['last_name']) ? $d['last_name'] : '';
+        $email = isset($d['email']) ? $d['email'] : '';
+        $phone = isset($d['phone']) ? $d['phone'] : '0';
+        $plot_id = isset($d['plot_id']) ? $d['plot_id'] : '';
         $offset = isset($d['offset']) ? preg_replace('~\D+~', '', $d['offset']) : 0;
         // update
-        if ($plot_id) {
+        if ($user_id) {
             $set = [];
-            $set[] = "status='".$status."'";
-            $set[] = "billing='".$billing."'";
-            $set[] = "number='".$number."'";
-            $set[] = "size='".$size."'";
-            $set[] = "price='".$price."'";
-            $set[] = "updated='".Session::$ts."'";
+            $set[] = "first_name='".$first_name."'";
+            $set[] = "last_name='".$last_name."'";
+            $set[] = "email='".$email."'";
+            $set[] = "phone=".$phone."";
+            $set[] = "plot_id='".$plot_id."'";
             $set = implode(", ", $set);
-            DB::query("UPDATE plots SET ".$set." WHERE plot_id='".$plot_id."' LIMIT 1;") or die (DB::error());
+            DB::query("UPDATE users SET ".$set." WHERE user_id='".$user_id."' LIMIT 1;") or die (DB::error());
         } else {
-            DB::query("INSERT INTO plots (
-                status,
-                billing,
-                number,
-                size,
-                price,
-                updated
+            DB::query("INSERT INTO users (
+                first_name,
+                last_name,
+                email,
+                phone,
+                plot_id
             ) VALUES (
-                '".$status."',
-                '".$billing."',
-                '".$number."',
-                '".$size."',
-                '".$price."',
-                '".Session::$ts."'
+                '".$first_name."',
+                '".$last_name."',
+                '".$email."',
+                '".$phone."',
+                '".$plot_id."'
             );") or die (DB::error());
         }
         // output
-        return Plot::plots_fetch(['offset' => $offset]);
+        return User::users_fetch(['offset' => $offset]);
+    }
+
+    public static function user_delete_window($d = []) {
+        $user_id = isset($d['user_id']) && is_numeric($d['user_id']) ? $d['user_id'] : 0;
+        HTML::assign('user', User::user_info($user_id));
+        return ['html' => HTML::fetch('./partials/user_delete.html')];
+    }
+
+    public static function user_delete_accept($d = []) {
+        // vars
+        $user_id = isset($d['user_id']) && is_numeric($d['user_id']) ? $d['user_id'] : 0;
+        // update
+        if ($user_id) {
+            DB::query("DELETE FROM users WHERE user_id='".$user_id."';") or die (DB::error());
+        }
+        // output
+        return User::users_fetch(['offset' => $offset]);
     }
 
     private static function plot_status_str($id) {
