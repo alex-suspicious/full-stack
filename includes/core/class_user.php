@@ -117,6 +117,18 @@ class User {
         $phone = isset($d['phone']) ? $d['phone'] : '0';
         $plot_id = isset($d['plot_id']) ? $d['plot_id'] : '';
         $offset = isset($d['offset']) ? preg_replace('~\D+~', '', $d['offset']) : 0;
+
+        if( 
+            !$first_name or
+            !$last_name or
+            !$email or
+            !$phone
+        )
+            die();
+
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        $email = strtolower($email);
+
         // update
         if ($user_id) {
             $set = [];
