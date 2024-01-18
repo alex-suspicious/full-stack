@@ -157,6 +157,40 @@ let common = {
             html('table', result.html);
         });
     },
+
+    // гыукы
+
+    user_edit_window: (plot_id, e) => {
+        // actions
+        cancel_event(e);
+        common.menu_popup_hide_all('all');
+        // vars
+        let data = {plot_id: plot_id};
+        let location = {dpt: 'user', act: 'edit_window'};
+        // call
+        request({location: location, data: data}, (result) => {
+            common.modal_show(400, result.html);
+        });
+    },
+
+    user_edit_update: (plot_id = 0) => {
+        // vars
+        let data = {
+            plot_id: plot_id,
+            status: gv('status'),
+            billing: gv('billing'),
+            number: gv('number'),
+            size: gv('size'),
+            price: gv('price'),
+            offset: global.offset
+        };
+        let location = {dpt: 'user', act: 'edit_update'};
+        // call
+        request({location: location, data: data}, (result) => {
+            common.modal_hide();
+            html('table', result.html);
+        });
+    },
 }
 
 add_event(document, 'DOMContentLoaded', common.init);
